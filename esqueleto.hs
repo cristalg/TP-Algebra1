@@ -102,3 +102,4 @@ len xs = fromIntegral (length xs)
 archivo1 = NuevaVersion [Insertar 0 'd', Insertar 1 'a', Insertar 2 't',Insertar 3 'o'] ArchivoVacio
 
 archivo2 = NuevaVersion [Insertar 0 'd'] archivo1
+--prueba cristian
