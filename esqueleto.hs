@@ -22,11 +22,13 @@ verArchivos (AgregarArchivo file scv) = "- " ++ (show file) ++ "\n" ++ (verArchi
 
 -- Ejercicio 1/8
 aplicarModificacion :: String -> Modificacion -> String
-aplicarModificacion (x:xs) (Borrar 0) = xs 
+aplicarModificacion (x:xs) (Borrar 1) = xs 
 aplicarModificacion (x:xs) (Borrar n) = x: (aplicarModificacion xs (Borrar (n-1)))
+aplicarModificacion  [] (Insertar 0 x) = [x]
 aplicarModificacion (x:xs) (Insertar 0 y) = (y:x:xs)
 aplicarModificacion (x:xs) (Insertar n y) = x: (aplicarModificacion xs (Insertar (n-1) y))
-aplicarModificacion (x:xs) (Substituir n y) = aplicarModificacion ( aplicarModificacion  (x:xs)(Borrar n)) (Insertar n y)
+aplicarModificacion (x:xs) (Substituir n y) = aplicarModificacion ( aplicarModificacion  (x:xs)(Borrar n)) (Insertar (n-1) y)
+                                        
 --aplicarModificacion = error "Implementar!!! (ejercicio 1)"
 
 -- Ejemplos:
@@ -39,7 +41,11 @@ aplicarModificacion (x:xs) (Substituir n y) = aplicarModificacion ( aplicarModif
 
 -- Ejercicio 2/8
 aplicarPaqueteModificaciones :: String -> PaqueteModificaciones -> String
-aplicarPaqueteModificaciones = error "Implementar!!! (ejercicio 2)"
+aplicarPaqueteModificaciones (s:st) [] = (s:st)
+aplicarPaqueteModificaciones [] (p:pm) = aplicarPaqueteModificaciones (aplicarModificacion [] p) pm
+aplicarPaqueteModificaciones (s:st) (p:pm) = aplicarPaqueteModificaciones (aplicarModificacion (s:st) p) pm 
+                                               
+--aplicarPaqueteModificaciones = error "Implementar!!! (ejercicio 2)"
 
 -- Ejemplos:
 -- Main> aplicarPaqueteModificaciones "dato" [Substituir 1 'p', Insertar 4 's']
@@ -47,17 +53,25 @@ aplicarPaqueteModificaciones = error "Implementar!!! (ejercicio 2)"
 
 -- Ejercicio 3/8
 obtenerUltimaVersion :: Archivo -> String
-obtenerUltimaVersion = error "Implementar!!! (ejercicio 3)"
+obtenerUltimaVersion ArchivoVacio = "Archivo Vacio"
+obtenerUltimaVersion (NuevaVersion pm ArchivoVacio) = aplicarPaqueteModificaciones ([]) pm
+obtenerUltimaVersion (NuevaVersion pm nv) = aplicarPaqueteModificaciones (obtenerUltimaVersion nv) pm 
+
+--obtenerUltimaVersion = error "Implementar!!! (ejercicio 3)"
 
 -- Ejemplos: (ver def. archivo1 y archivo2 abajo)
 -- Main> obtenerUltimaVersion archivo1
 -- "dato"
 -- Main> obtenerUltimaVersion archivo2
 -- "ddato"
-
+ 
 -- Ejercicio 4/8
 cantVersiones :: Archivo -> Integer
-cantVersiones = error "Implementar!!! (ejercicio 4)"
+cantVersiones ArchivoVacio = 0
+cantVersiones (NuevaVersion pm ArchivoVacio) = 1
+cantVersiones (NuevaVersion pm nv) = 1 + cantVersiones nv 
+
+--cantVersiones = error "Implementar!!! (ejercicio 4)"
 
 -- Ejemplos:
 -- Main> cantVersiones archivo1
@@ -67,7 +81,11 @@ cantVersiones = error "Implementar!!! (ejercicio 4)"
 
 -- Ejercicio 5/8
 obtenerVersion :: Integer -> Archivo -> String
-obtenerVersion  = error "Implementar!!! (ejercicio 5)"
+obtenerVersion 0 (_) = "Archivo Vacio"
+obtenerVersion 1 (NuevaVersion pm ArchivoVacio) = obtenerUltimaVersion (NuevaVersion pm ArchivoVacio)
+obtenerVersion n (NuevaVersion pm nv)| cantVersiones (NuevaVersion pm nv) == n = obtenerUltimaVersion (NuevaVersion pm nv)
+                                     | otherwise = obtenerVersion n nv  
+--obtenerVersion  = error "Implementar!!! (ejercicio 5)"
 
 -- Ejemplos:
 -- Main> obtenerVersion 1 archivo2
@@ -75,7 +93,20 @@ obtenerVersion  = error "Implementar!!! (ejercicio 5)"
 
 -- Ejercicio 6/8
 levenshtein :: String -> String -> Integer --PaqueteModificaciones
-levenshtein = error "Implementar!!! (ejercicio 6)"
+levenshtein s1 [] = len s1
+levenshtein [] s2 = len s2
+levenshtein s1 s2 | min (len(s1)) (len(s2))== 0 = max (len(s1)) (len(s2))
+                  | otherwise = minimum [a, b, c] 
+          where
+          a = (levenshtein (init s1) s2) + 1
+          b = (levenshtein s1 (init s2)) + 1 
+          c = (levenshtein (init s1) (init s2)) + (igualesUltimos s1 s2)   
+
+
+igualesUltimos :: String -> String-> Integer
+igualesUltimos (_:x) (_:y)| y == x = 0
+                          | otherwise = 1  
+--levenshtein = error "Implementar!!! (ejercicio 6)"
 
 -- Ejemplos:
 -- Main> levenshtein "auto" "automata"
